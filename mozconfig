@@ -1,0 +1,51 @@
+ac_add_options --enable-application=browser
+ac_add_options --disable-artifact-builds
+
+# Settings :: Optimizations
+ac_add_options MOZ_PGO=1
+ac_add_options --enable-release
+ac_add_options --disable-debug
+ac_add_options --disable-debug-symbols
+ac_add_options --disable-debug-js-modules
+ac_add_options --disable-tests
+ac_add_options --enable-strip
+ac_add_options --enable-install-strip
+ac_add_options --enable-clang-plugin
+ac_add_options --enable-lto=full
+ac_add_options --linker=lld
+ac_add_options --enable-wasm-avx
+ac_add_options --enable-rust-simd
+ac_add_options --disable-parental-controls
+ac_add_options --disable-crashreporter
+ac_add_options --disable-updater
+ac_add_options --enable-jemalloc
+ac_add_options --with-branding=browser/branding/official
+
+ac_add_options --enable-sandbox
+
+ac_add_options --disable-accessibility
+ac_add_options --disable-webspeech
+ac_add_options --disable-dbus
+ac_add_options --disable-necko-wifi
+ac_add_options --disable-eme
+ac_add_options --disable-webrtc
+ac_add_options --disable-synth-speechd
+ac_add_options --enable-replace-malloc
+
+mk_add_options MOZ_PARALLEL_COMPILE=4
+mk_add_options MOZ_PARALLEL_BUILD=4
+mk_add_options MOZ_CRASHREPORTER=0
+mk_add_options MOZ_DATA_REPORTING=0
+mk_add_options MOZ_SERVICES_HEALTHREPORT=0
+mk_add_options MOZ_TELEMETRY_REPORTING=0
+
+export RUSTFLAGS="-C opt-level=3 -C target-cpu=x86-64-v3 -C codegen-units=1 -Cpanic=abort -Cforce-frame-pointers=no -Cllvm-args=--inline-threshold=1000 -Cllvm-args=-vectorize-loops -Cllvm-args=-vectorize-slp"
+export CFLAGS="$CFLAGS -O3 -march=x86-64-v3 -mavx2 -maes -msse4.2 -fno-semantic-interposition -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-plt -funroll-loops"
+#export CFLAGS="$CFLAGS -O3 -march=znver4 -mtune=znver4 -mavx2 -maes -msse4.2 -fno-semantic-interposition -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-plt -funroll-loops"
+export CXXFLAGS="$CXXFLAGS $CFLAGS"
+export LDFLAGS="-Wl,--lto-O3 -Wl,--gc-sections -Wl,-z,now -Wl,-z,relro -Wl,--icf=all $LDFLAGS"
+
+export VERBOSE=1
+mk_add_options AUTOCLOBBER=1
+mk_add_options MOZ_MAKE_FLAGS="-j4"
+mk_add_options MOZ_OBJDIR=@TOPSRCDIR@/objdir-opt
