@@ -3,6 +3,9 @@ ac_add_options --disable-artifact-builds
 
 # Settings :: Optimizations
 ac_add_options MOZ_PGO=1
+ac_add_options MOZ_HEADLESS=1
+ac_add_options MOZ_HEADLESS_WIDTH=1024
+ac_add_options MOZ_HEADLESS_HEIGHT=768
 ac_add_options --enable-release
 ac_add_options --disable-debug
 ac_add_options --disable-debug-symbols
