@@ -52,5 +52,5 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "./mozilla-unified/objdir-opt/dist/*.tar.*"
+          artifacts: "./mozilla-unified/objdir-opt/dist/*.tar.*, ./*.deb"
           tag: linux-v${{ steps.version.outputs.version }}-${{ steps.release-tag.outputs.NOW }}
