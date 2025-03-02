@@ -1,1 +1,1 @@
-# firefox-builder
+# floorp-builder

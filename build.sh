@@ -2,41 +2,44 @@
 set -e
 
 sync_ver() {
-    echo "Fetching latest Firefox version..."
-    VERSION=$(curl -sf https://product-details.mozilla.org/1.0/firefox_versions.json | \
-             jq -er '.LATEST_FIREFOX_VERSION')
-    export VERSION
-    ver=$VERSION
+  TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+  export TAG
 
-    TAG="FIREFOX_$( echo ${ver} | sed 's/\./_/g')_RELEASE"
-
-    echo "Syncing to $TAG"
-    hg up -C "$TAG" || {
-        echo "Error: Failed to update to version $TAG"
-        exit 1
-    }
+  echo "Syncing to $TAG"
+  git checkout $TAG || exit 1
 }
 
-setup_build() {
-    if [ ! -d mozilla-unified ]; then
-        echo "Downloading bootstrap script..."
-        curl -sf https://hg.mozilla.org/mozilla-central/raw-file/default/python/mozboot/bin/bootstrap.py -O
+build_commands() {
+  echo "Copying mozconfig..."
+  ./mach --no-interactive bootstrap --application-choice "Firefox for Desktop"
+   cp ../mozconfig .
+  ./mach configure
 
-        echo "Setting up repository..."
-        python3 bootstrap.py --application-choice=browser --no-interactive
+  echo "Starting build..."
+  ./mach build
 
-        cd mozilla-unified
-        sync_ver
-    else
-        cd mozilla-unified
-        sync_ver
-    fi
+  echo "Packaging..."
+  ./mach package
+}
+
+setup_and_build() {
+  if [ ! -d Floorp ]; then
+    echo "Setting up repository..."
+    git clone --recursive https://github.com/Floorp-Projects/Floorp.git
+    cd Floorp
+    sync_ver
+  else
+    cd Floorp
+    sync_ver
+  fi
+  build_commands
+  cd ..
 }
 
 build_deb() {
-export PACKAGE=firefox-lp3
+export PACKAGE=floorp-lp3
 
-cp mozilla-unified/objdir-opt/dist/*.tar.* .
+cp Floorp/objdir-opt/dist/*.tar.* .
 tar xvf *.tar.*
 
 rm -rf $PACKAGE
@@ -45,9 +48,9 @@ mkdir -p $PACKAGE/opt
 mkdir -p $PACKAGE/usr/share/applications/
 mkdir -p $PACKAGE/opt/$PACKAGE/
 
-cp -r firefox/* $PACKAGE/opt/$PACKAGE/
-mv $PACKAGE/opt/$PACKAGE/firefox $PACKAGE/opt/$PACKAGE/$PACKAGE
-mv $PACKAGE/opt/$PACKAGE/firefox-bin $PACKAGE/opt/$PACKAGE/$PACKAGE-bin
+cp -r floorp/* $PACKAGE/opt/$PACKAGE/
+mv $PACKAGE/opt/$PACKAGE/floorp $PACKAGE/opt/$PACKAGE/$PACKAGE
+mv $PACKAGE/opt/$PACKAGE/floorp-bin $PACKAGE/opt/$PACKAGE/$PACKAGE-bin
 
 cp $PACKAGE.desktop $PACKAGE/usr/share/applications/$PACKAGE.desktop
 
@@ -56,8 +59,8 @@ Package: $PACKAGE
 Architecture: amd64
 Maintainer: @ghazzor
 Priority: optional
-Version: $VERSION
-Description: Unofficial Firefox build for x86-64-v3 CPU with O3+LTO+PGO.
+Version: $TAG
+Description: Unofficial Foorp build for x86-64-v3 CPU with O3+LTO+PGO.
 EOF
 
 cat > $PACKAGE/DEBIAN/postinst <<EOF
@@ -91,26 +94,12 @@ chmod +x $PACKAGE/usr/share/applications/*.desktop
 
 # Build the package and check for errors
 dpkg-deb --build $PACKAGE || { echo "Error: Failed to create Debian package"; exit 1; }
-mv ${PACKAGE}.deb ${PACKAGE}_v${VERSION}_amd64.deb
-rm -rf *.tar.* firefox $PACKAGE
+mv ${PACKAGE}.deb ${PACKAGE}_v${TAG}_amd64.deb
+rm -rf *.tar.* floorp $PACKAGE
 }
 
 # Main execution
-setup_build
-
-# Copy configuration
-echo "Copying mozconfig..."
-cp ../mozconfig .
-./mach configure
-
-echo "Starting build..."
-./mach build
-
-echo "Packaging..."
-./mach package
-
-cd ..
-
+setup_and_build
 
 export deb_pkg=1
 

@@ -1,5 +1,10 @@
 ac_add_options --enable-application=browser
 ac_add_options --disable-artifact-builds
+ac_add_options --with-branding=browser/branding/official
+ac_add_options --with-app-basename=Floorp
+ac_add_options --with-app-name=floorp
+ac_add_options --enable-bootstrap
+
 
 # Settings :: Optimizations
 ac_add_options MOZ_PGO=1
@@ -22,7 +27,6 @@ ac_add_options --disable-parental-controls
 ac_add_options --disable-crashreporter
 ac_add_options --disable-updater
 ac_add_options --enable-jemalloc
-ac_add_options --with-branding=browser/branding/official
 
 ac_add_options --enable-sandbox
 
