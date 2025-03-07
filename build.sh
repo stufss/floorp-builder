@@ -4,7 +4,6 @@ set -e
 sync_ver() {
   TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
   export TAG
-
   echo "Syncing to $TAG"
   git checkout $TAG || exit 1
 }
@@ -25,7 +24,7 @@ build_commands() {
 setup_and_build() {
   if [ ! -d Floorp ]; then
     echo "Setting up repository..."
-    git clone --recursive https://github.com/Floorp-Projects/Floorp.git
+    git clone --recursive https://github.com/Floorp-Projects/Floorp-12.git Floorp
     cd Floorp
     sync_ver
   else
@@ -100,6 +99,7 @@ rm -rf *.tar.* floorp $PACKAGE
 
 # Main execution
 setup_and_build
+echo $TAG > tagversion
 
 export deb_pkg=1
 

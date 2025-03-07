@@ -42,7 +42,7 @@ jobs:
       - name: Get Firefox version
         id: version
         run: |
-          VERSION=$(curl -s https://product-details.mozilla.org/1.0/firefox_versions.json | jq -r '.LATEST_FIREFOX_VERSION')
+          VERSION=$(cat tagversion)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Set Release Tag Output
